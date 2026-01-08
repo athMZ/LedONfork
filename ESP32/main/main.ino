@@ -96,7 +96,7 @@ bool initESPNow() {
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     Serial.println("Failed to add peer 1");
   } else {
-    Serial.println("YES Peer 1 added");
+    Serial.println("Peer 1 added");
   }
   
   // Add Peer 2
@@ -205,7 +205,7 @@ void showNewNumber() {
   Serial.print("  Value: ");
   Serial.print(test.valuez);
   Serial.print("  [P1:");
-  Serial.print(peer1Connected ? "Ok" : "FAIL");
+  Serial.print(peer1Connected ? "OK" : "FAIL");
   Serial.print(" P2:");
   Serial.print(peer2Connected ? "OK" : "FAIL");
   Serial.println("]");
@@ -226,21 +226,20 @@ void monitorConnections() {
   // Check if Bluetooth is still connected
   if (SerialBT.hasClient()) {
     if (now - lastBTActivity > BT_TIMEOUT) {
-      Serial.println("⚠ Bluetooth timeout - no activity");
+      Serial.println("[WARNING] Bluetooth timeout - no activity");
     }
   } else {
-    Serial.println("⚠ Bluetooth client disconnected");
+    Serial.println("[WARNING] Bluetooth client disconnected");
   }
   
   // Reset peer connection flags periodically
   // They'll be set to true when we get successful send callbacks
   static unsigned long lastPeerReset = 0;
-  if (now - lastPeerReset > 10000) {
+  if (now - lastSendTime > 15000) {
     peer1Connected = false;
     peer2Connected = false;
-    lastPeerReset = now;
   }
-  
+
   // Status report
   Serial.print("Status: BT[");
   Serial.print(SerialBT.hasClient() ? "OK" : "FAIL");
