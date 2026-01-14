@@ -44,133 +44,152 @@ typedef struct __attribute__((packed)) {
 //Create a struct_message called myData
 test_struct myData;
 
-volatile bool newData = false;
-volatile int receivedId = -1;
-volatile int receivedValue = 0;
-
 //callback function that will be executed when data is received
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
   memcpy(&myData, incomingData, sizeof(test_struct));
-  receivedId = myData.id;
-  receivedValue = myData.valuez;
-  newData = true;
-}
+  Serial.print("Id: "); Serial.print(myData.id);
+  Serial.println();
+  Serial.print(", valuez: "); Serial.print(myData.valuez);
+  Serial.println();
 
-// Debug timer
-unsigned long lastDebugPrint = 0;
 
-void processReceivedData() {
-  if (!newData) return;
+void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
+  lastReceiveTime = millis();
+  connectionActive = true;
+  receiveCount++;
+  
+  memcpy(&myData, incomingData, sizeof(test_struct));
+  
+  Serial.print("RX ID: ");
+  Serial.print(myData.id);
+  Serial.print(" Value: ");
+  Serial.print(myData.valuez);
 
-  // Create atomic snapshot of data to prevent race conditions
-  noInterrupts();
-  int _id = receivedId;
-  int _val = receivedValue;
-  newData = false; 
-  interrupts();
-
-  Serial.print("\n>>> RECV ID: "); Serial.print(_id);
-  Serial.print(" VAL: "); Serial.println(_val);
-
-  switch (_id) {
-    case 0:      
+  // Process commands
+  switch (myData.id) {
+    case 0:
       LEDmode = 0;
-      Serial.println("    -> LEDmode = 0 (OFF)");
+      Serial.println("OK Mode: OFF");
       break;
+      
     case 2:
-      if (_val > 0 && _val <= NUM_LEDS) {
-        FastLED.clear();
-        FastLED.show();
-        configured_leds = _val;
-        FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, configured_leds);
-        FastLED.setBrightness(brightness);
-        Serial.print("    -> configured_leds = "); Serial.println(configured_leds);
-      } else {
-        Serial.print("    -> INVALID LED count: "); Serial.println(_val);
-      }
-      break;
-    case 4:
-      brightness = _val;
+      FastLED.clear();
+      FastLED.show();
+      configured_leds = constrain(myData.valuez, 1, NUM_LEDS);
+      FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, configured_leds);
       FastLED.setBrightness(brightness);
-      Serial.print("    -> brightness = "); Serial.println(brightness);
+      Serial.print("OK LED count: ");
+      Serial.println(configured_leds);
       break;
-    case 6:  
-      h = _val;
-      Serial.print("    -> h (hue) = "); Serial.println(h);
+      
+    case 4:
+      brightness = constrain(myData.valuez, 0, 255);
+      FastLED.setBrightness(brightness);
+      Serial.print("OK Brightness: ");
+      Serial.println(brightness);
       break;
-    case 7:  
-      s = _val;
-      Serial.print("    -> s (sat) = "); Serial.println(s);
+      
+    case 6:
+      h = constrain(myData.valuez, 0, 255);
+      Serial.print("OK Hue: ");
+      Serial.println(h);
       break;
+      
+    case 7:
+      s = constrain(myData.valuez, 0, 255);
+      Serial.print("OK Saturation: ");
+      Serial.println(s);
+      break;
+      
     case 8:
       LEDmode = 1;
-      Serial.println("    -> LEDmode = 1 (SOLID COLOR)");
+      Serial.println("OK Mode: Solid color");
       break;
+      
     default:
-      LEDmode = _id;
-      Serial.print("    -> LEDmode = "); Serial.println(LEDmode);
+      LEDmode = myData.id;
+      Serial.print("OK Mode: ");
+      Serial.println(LEDmode);
       break;
   }
 }
 
 void setup() {
-  //Initialize Serial Monitor
   Serial.begin(115200);
-
-  //Set device as a Wi-Fi Station
+  delay(1000);
+  
+  Serial.println("\n=== ESP8266 LED Receiver ===");
+  
+  // PRINT MAC ADDRESS - COPY THIS FOR MAIN BOARD
+  Serial.print("MAC Address: ");
+  Serial.println(WiFi.macAddress());
+  Serial.println(">>> Copy this MAC address to main board <<<");
+  
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  //Init ESP-NOW
+  WiFi.setOutputPower(15);
+  
   if (esp_now_init() != 0) {
-    Serial.println("Error initializing ESP-NOW");
+    Serial.println("ERR ESP-NOW init failed");
+    delay(1000);
+    ESP.restart();
     return;
   }
-
-  configured_leds = 20;
   
-  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, configured_leds);
-  FastLED.setBrightness(brightness);
-
-  Serial.println("\n=== SETUP COMPLETE ===");
-  Serial.print("configured_leds: "); Serial.println(configured_leds);
-  Serial.print("brightness: "); Serial.println(brightness);
-  Serial.print("h (hue): "); Serial.println(h);
-  Serial.print("s (sat): "); Serial.println(s);
-  Serial.print("v (val): "); Serial.println(v);
-  Serial.print("LEDmode: "); Serial.println(LEDmode);
-  Serial.println("======================\n");
-
-  paletteBlendingIndex();
-
-  chooseNextColorPalette(gTargetPalette);
-  // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
+  Serial.println("OK ESP-NOW initialized");
+  
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(OnDataRecv);
+  
+  // Initialize FastLED
+  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, configured_leds);
+  FastLED.setBrightness(brightness);
+  
+  // Startup animation - blue sweep
+  for(int i = 0; i < configured_leds; i++) {
+    leds[i] = CRGB::Blue;
+    FastLED.show();
+    delay(20);
+  }
+  FastLED.clear();
+  FastLED.show();
+  
+  lastReceiveTime = millis();
+  Serial.println("=== Ready ===\n");
+}
 
+void monitorConnection() {
+  unsigned long now = millis();
+  
+  if (now - lastReceiveTime > RECEIVE_TIMEOUT) {
+    if (connectionActive) {
+      Serial.println("WARN Connection timeout");
+      connectionActive = false;
+    }
+  }
+  
+  if (now - lastStatusReport > 30000) {
+    Serial.print("Status: ");
+    Serial.print(connectionActive ? "Connected" : "Disconnected");
+    Serial.print(" | Messages: ");
+    Serial.print(receiveCount);
+    Serial.print(" | Mode: ");
+    Serial.print(LEDmode);
+    Serial.print(" | LEDs: ");
+    Serial.print(configured_leds);
+    Serial.print(" | Heap: ");
+    Serial.println(ESP.getFreeHeap());
+    
+    lastStatusReport = now;
+  }
 }
 
 
-
-
-
 void loop() {
-  processReceivedData();
-  yield(); // Important for WiFi/ESP-NOW stack
-
-  // Debug print every 3 seconds
-  if (millis() - lastDebugPrint > 3000) {
-    Serial.print("[STATUS] Mode:"); Serial.print(LEDmode);
-    Serial.print(" LEDs:"); Serial.print(configured_leds);
-    Serial.print(" H:"); Serial.print(h);
-    Serial.print(" S:"); Serial.print(s);
-    Serial.print(" V:"); Serial.print(v);
-    Serial.print(" Bright:"); Serial.println(brightness);
-    lastDebugPrint = millis();
-  }
-
   BouncingBallEffect ballz(configured_leds, 3, 64, false);
   BouncingBallEffect ballzMirr(configured_leds, 3, 64, true);
+  monitorConnection();
+
 
   switch (LEDmode) {
     case 0:      
