@@ -145,30 +145,186 @@ void loop() {
   handleUDP();
 
   switch (LEDmode) {
-    case 0:
+    case 0: // OFF      
       fadeToBlackBy(leds, configured_leds_ALL, 10);
       break;
 
-    case 1:
+    case 1: // SOLID COLOR
       for (int i = 0; i < configured_leds; i++) {
         leds[i] = CHSV(h, s, v);
       }
       break;
+      
+      // === Effects ===
+      
+    case 2:
+      // NOP (Config placeholder)
+      break;
+      
+    case 9:
+      movingDots();
+      break;
+    case 12:
+      heatMap();
+      break;
+    case 13:
+      paletteBlending();
+      break;
+    case 14:
+      seaGradient();
+      break;
+    case 15:
+      blackened();
+      break;
+    case 16:
+      paletteKnife();
+      break;
 
+
+    case 21:
+      addingWaves();
+      break;
+    case 23:
+      blurPhaseBeat();
+      break;
+    case 24:
+      brightnessWaves();
+      break;
+    case 25:
+      gradientBeat();
+      break;
     case 26:
-      movingDot();
+      movingDot(); // user log showed ID 26
+      break;
+    case 27:
+      phaseBeat();
+      break;
+    case 28:
+      rainbowBeat();
+      break;
+    case 29:
+      sawTooth();
       break;
 
-    case 47:
-      ballz.Draw();
+    case 31:
+      fillRawNoise8();
+      break;
+    case 32:
+      fire();
+      break;
+    case 33:
+      inoiseEight();
+      break;
+    case 34:
+      inoiseEightMoving();
+      break;
+    case 35:
+      lava();
+      break;
+    case 36:
+      movingPixel();
+      break;
+    case 37:
+      prettyFill();
+      break;
+    case 38:
+      ripple();
+      break;
+    case 39:
+      comet();
       break;
 
+    case 41:
+      fireFastLed();
+      break;
+    case 42:
+      cylon();
+      break;
+    case 43:
+      runPacifica();
+      break;
+    case 44:
+      runPride();
+      break;
+    case 45:
+      runTwinkleFox();
+      break;
+    case 46:
+      runDemoReel();
+      break;
+      
+    case 47: 
+      if (LEDmode == 47) {
+        ballz.Draw();
+      }
+      break;
+      
     case 48:
-      ballzMirr.Draw();
+      if (LEDmode == 48) {
+        ballzMirr.Draw();
+      }
+      break;
+      
+    case 49:
+      DrawMarquee();
+      break;
+    case 50:
+      DrawMarqueeMirrored();
       break;
 
-    // === keep ALL your other cases unchanged ===
-    // (I trimmed here for readability)
+    case 60:
+      runConfetti();
+      break;
+    case 61:
+      runConfetti2();
+      break;
+    case 62:
+      runDotBeat();
+      break;
+    case 63:
+      runEase();
+      break;
+    case 64:
+      Lightning();
+      break;
+    case 65:
+      runPlasma();
+      break;
+    case 66:
+      RainbowMarch();
+      break;
+    case 67:
+      RainbowMarch2();
+      break;
+    case 68:
+      runSerendipitous();
+      break;
+    case 69:
+      ThreeSinDemo();
+      break; 
+    case 70:
+      runNoise16_1();
+      break;
+    case 71:
+      runNoise16_2();
+      break;
+    case 72:
+      runNoise16_3();
+      break;
+
+    // === NEW EFFECTS ===
+    case 80:
+      breathingEffect();
+      break;
+    case 81:
+      matrixRainEffect();
+      break;
+    case 82:
+      policeStrobe();
+      break;
+    case 83:
+      colorWipeEffect();
+      break;
   }
 
   if (LEDmode != 47 && LEDmode != 48) {
