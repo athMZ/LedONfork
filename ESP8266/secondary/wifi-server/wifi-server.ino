@@ -40,31 +40,99 @@ const char PAGE[] PROGMEM = R"rawliteral(
   <title>LED Controller</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: sans-serif; text-align: center; }
-    button { font-size: 18px; margin: 6px; padding: 14px 22px; }
+    body { font-family: sans-serif; background:#111; color:#eee; text-align:center; }
+    h2 { margin-top: 10px; }
+    .group { border:1px solid #333; margin:10px; padding:10px; border-radius:8px; }
+    button {
+      font-size:14px;
+      padding:10px;
+      margin:4px;
+      min-width:120px;
+    }
+    input[type=range] {
+      width: 90%;
+    }
   </style>
 </head>
-<body>
-  <h2>ESP8266 LED Control</h2>
 
+<body>
+<h2>ESP8266 LED Controller</h2>
+
+<div class="group">
   <button onclick="send(0,0)">OFF</button>
   <button onclick="send(1,0)">SOLID</button>
-  <button onclick="send(26,0)">MOVING DOT</button>
-  <button onclick="send(47,0)">BALL</button>
+</div>
 
-  <br><br>
-  <button onclick="send(4,50)">Dim</button>
-  <button onclick="send(4,128)">Normal</button>
-  <button onclick="send(4,255)">Bright</button>
+<div class="group">
+  <h3>Color</h3>
+  Hue<br>
+  <input type="range" min="0" max="255" value="84"
+         oninput="send(6,this.value)">
+  <br>Saturation<br>
+  <input type="range" min="0" max="255" value="255"
+         oninput="send(7,this.value)">
+</div>
 
-  <script>
-    function send(id,val){
-      fetch(`/cmd?id=${id}&val=${val}`);
-    }
-  </script>
+<div class="group">
+  <h3>Brightness</h3>
+  <input type="range" min="0" max="255" value="127"
+         oninput="send(4,this.value)">
+</div>
+
+<div class="group">
+  <h3>Basic Effects</h3>
+  <button onclick="send(26,0)">Moving Dot</button>
+  <button onclick="send(47,0)">Bouncing Ball</button>
+  <button onclick="send(48,0)">Mirrored Ball</button>
+</div>
+
+<div class="group">
+  <h3>Waves / Beats</h3>
+  <button onclick="send(21,0)">Adding Waves</button>
+  <button onclick="send(23,0)">Blur Phase Beat</button>
+  <button onclick="send(24,0)">Brightness Waves</button>
+  <button onclick="send(25,0)">Gradient Beat</button>
+  <button onclick="send(27,0)">Phase Beat</button>
+  <button onclick="send(28,0)">Rainbow Beat</button>
+</div>
+
+<div class="group">
+  <h3>Noise / Fire</h3>
+  <button onclick="send(31,0)">Raw Noise</button>
+  <button onclick="send(32,0)">Fire</button>
+  <button onclick="send(33,0)">Noise 8</button>
+  <button onclick="send(34,0)">Noise Moving</button>
+  <button onclick="send(35,0)">Lava</button>
+</div>
+
+<div class="group">
+  <h3>Demo / Special</h3>
+  <button onclick="send(41,0)">Fire FastLED</button>
+  <button onclick="send(42,0)">Cylon</button>
+  <button onclick="send(43,0)">Pacifica</button>
+  <button onclick="send(44,0)">Pride</button>
+  <button onclick="send(45,0)">TwinkleFox</button>
+  <button onclick="send(46,0)">Demo Reel</button>
+</div>
+
+<div class="group">
+  <h3>New Effects</h3>
+  <button onclick="send(80,0)">Breathing</button>
+  <button onclick="send(81,0)">Matrix Rain</button>
+  <button onclick="send(82,0)">Police Strobe</button>
+  <button onclick="send(83,0)">Color Wipe</button>
+</div>
+
+<script>
+function send(id, val) {
+  fetch(`/cmd?id=${id}&val=${val}`);
+}
+</script>
+
 </body>
 </html>
 )rawliteral";
+
 
 // ================== SETUP ==================
 void setup() {
