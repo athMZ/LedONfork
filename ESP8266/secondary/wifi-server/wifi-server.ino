@@ -40,7 +40,7 @@ const char PAGE[] PROGMEM = R"rawliteral(
   <title>LED Controller</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: sans-serif; background:#111; color:#eee; text-align:center; }
+    body { font-family: sans-serif; background:#111; color:#eee; text-align:center; max-width: 600px; margin: 0 auto; }
     h2 { margin-top: 10px; }
     .group { border:1px solid #333; margin:10px; padding:10px; border-radius:8px; }
     button {
@@ -48,9 +48,24 @@ const char PAGE[] PROGMEM = R"rawliteral(
       padding:10px;
       margin:4px;
       min-width:120px;
+      cursor: pointer;
+      background-color: #333;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 4px;
     }
+    button:active { background-color: #555; }
     input[type=range] {
       width: 90%;
+      cursor: pointer;
+    }
+    .color-preview {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #555;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        background-color: hsl(118, 100%, 50%); /* Initial default */
     }
   </style>
 </head>
@@ -59,18 +74,28 @@ const char PAGE[] PROGMEM = R"rawliteral(
 <h2>ESP8266 LED Controller</h2>
 
 <div class="group">
-  <button onclick="send(0,0)">OFF</button>
+  <button onclick="send(0,0)" style="background-color: #500;">OFF</button>
   <button onclick="send(1,0)">SOLID</button>
 </div>
 
 <div class="group">
+    <h3>Configuration</h3>
+    <label>Active LEDs: <span id="ledCountDisp">255</span></label><br>
+    <input type="range" min="1" max="255" value="255" 
+           oninput="document.getElementById('ledCountDisp').innerText=this.value; send(2,this.value)">
+</div>
+
+<div class="group">
   <h3>Color</h3>
-  Hue<br>
-  <input type="range" min="0" max="255" value="84"
-         oninput="send(6,this.value)">
-  <br>Saturation<br>
-  <input type="range" min="0" max="255" value="255"
-         oninput="send(7,this.value)">
+  <div id="colorPreview" class="color-preview"></div>
+  
+  <label>Hue</label><br>
+  <input id="hueSlider" type="range" min="0" max="255" value="84"
+         oninput="updateColor(); send(6,this.value)">
+  <br>
+  <label>Saturation</label><br>
+  <input id="satSlider" type="range" min="0" max="255" value="255"
+         oninput="updateColor(); send(7,this.value)">
 </div>
 
 <div class="group">
@@ -127,6 +152,22 @@ const char PAGE[] PROGMEM = R"rawliteral(
 function send(id, val) {
   fetch(`/cmd?id=${id}&val=${val}`);
 }
+
+function updateColor() {
+    var h = document.getElementById('hueSlider').value;
+    var s = document.getElementById('satSlider').value;
+    
+    // FastLED Hue 0-255 -> CSS HSL 0-360
+    var deg = Math.floor(h * 360 / 255);
+    // FastLED Sat 0-255 -> CSS HSL 0-100%
+    var sat = Math.floor(s * 100 / 255);
+    
+    var colorString = 'hsl(' + deg + ', ' + sat + '%, 50%)';
+    document.getElementById('colorPreview').style.backgroundColor = colorString;
+}
+
+// Init color on load
+updateColor();
 </script>
 
 </body>
