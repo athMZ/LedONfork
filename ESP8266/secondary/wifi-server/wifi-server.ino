@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
+#include <ESP8266mDNS.h>
 
 // ================== WIFI ==================
 const char* AP_SSID = "LED_MASTER";
@@ -189,6 +190,8 @@ void setup() {
   Serial.print("AP IP: ");
   Serial.println(WiFi.softAPIP());
 
+  MDNS.begin("led");
+  Serial.println("APP URL: http://led.local");
   // UDP
   udp.begin(UDP_PORT);
 
@@ -217,4 +220,5 @@ void setup() {
 // ================== LOOP ==================
 void loop() {
   server.handleClient();
+  MDNS.update();
 }

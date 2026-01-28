@@ -10,8 +10,5 @@
 
 Pomocniczy kod QR:
 
-- W przeglądarce telefonu otwieramy adres: `http://192.168.4.1/`
+- W przeglądarce telefonu otwieramy adres: `led.local`
 
-![Strona do sterowania paskami LED](qr-code-1.jpg)
-
-84
