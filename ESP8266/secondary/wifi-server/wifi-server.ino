@@ -81,8 +81,8 @@ const char PAGE[] PROGMEM = R"rawliteral(
 
 <div class="group">
     <h3>Configuration</h3>
-    <label>Active LEDs: <span id="ledCountDisp">255</span></label><br>
-    <input type="range" min="1" max="255" value="255" 
+    <label>Active LEDs: <span id="ledCountDisp">85</span></label><br>
+    <input type="range" min="1" max="85" value="85" 
            oninput="document.getElementById('ledCountDisp').innerText=this.value; send(2,this.value)">
 </div>
 
