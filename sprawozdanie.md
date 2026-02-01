@@ -2,20 +2,13 @@
 
 # Uniwersytet Bielsko-Bialski
 
-<br><br>
-
 # Sprawozdanie
 ## Rozszerzony Internet rzeczy
 
-<br><br><br><br>
-
 **Data:** 29.01.2026
-
-<br>
 
 **Temat:** Przeprogramować efekty RGB
 </div>
-<br><br><br><br><br>
 
 <div align="right">
 
@@ -33,7 +26,7 @@ Poprawienie działania połączenia pomiędzy masterem, a slavem, dodanie nowych
 ## Realizacja
 
 ### Pierwotne założenie
-Projektowe opierało się na wykorzystaniu modułu ESP32 jako jednostki centralnej (Master) oraz modułów ESP8266 jako odbiorników (Slave). Komunikacja miała odbywać się dwuetapowo: od smartfona do Mastera, a następnie z Mastera do urządzeń wykonawczych za pośrednictwem sieci WiFi.
+Projekt opierał się na wykorzystaniu modułu ESP32 jako jednostki centralnej (Master) oraz modułów ESP8266 jako odbiorników (Slave). Komunikacja miała odbywać się dwuetapowo: od smartfona do Mastera z użyciem Bluetooth, a następnie z Mastera do urządzeń wykonawczych za pośrednictwem sieci WiFi.
 
 Podczas testów prototypu napotkano jednak problemy z utrzymaniem stabilności połączenia w tej konfiguracji. Próby synchronizacji wielu standardów i zarządzania ruchem sieciowym przez ESP32 nie zapewniały oczekiwanej płynności przesyłu danych, co objawiało się opóźnieniami w reakcji diod LED, a czasem całkowitym brakiem reakcji.
 
@@ -43,8 +36,10 @@ W celu optymalizacji stabilności zdecydowano się na zmianę jednostki centraln
 **Kluczowe cechy nowego rozwiązania:**
 
 *   **Bezpośredni interfejs:** Sterowanie odbywa się poprzez responsywną stronę internetową hostowaną bezpośrednio na module Master.
-*   **Protokół UDP:** Do komunikacji z modułami Slave wykorzystano protokół UDP (User Datagram Protocol) w trybie broadcast. Pozwala to na niemal natychmiastowe przesyłanie rozkazów do wszystkich odbiorników jednocześnie bez konieczności nawiązywania złożonych sesji.
+*   **Brak aplikacji mobilnej:** Użytkownik nie musi instalować żadnej dedykowanej aplikacji, co upraszcza korzystanie z systemu. Sterowanie odbywa się poprzez standardową przeglądarkę internetową.
+*   **Protokół UDP:** Do komunikacji z modułami Slave wykorzystano protokół UDP w trybie broadcast. Pozwala to na niemal natychmiastowe przesyłanie rozkazów do wszystkich odbiorników jednocześnie bez konieczności nawiązywania złożonych sesji.
 *   **Obsługa mDNS:** Dzięki implementacji usługi DNS użytkownik nie musi pamiętać adresu IP urządzenia. Dostęp do panelu sterowania uzyskuje się poprzez wpisanie w przeglądarce przyjaznego adresu `http://led.local`.
+*   **Praca w sieci WiFi:** Moduł Master działa jako punkt dostępowy, do którego podłączają płytki sterujące LED-ami. Usunięcie napotkanej w projekcie listy adresów MAC upraszcza konfigurację projektu i umożliwia łatwe dodawanie nowych urządzeń bez zmian w kodzie płytki Master.
 
 ### Specyfikacja techniczna
 
@@ -59,6 +54,8 @@ W celu optymalizacji stabilności zdecydowano się na zmianę jednostki centraln
 | **Adres rozgłoszeniowy** | 192.168.4.255 |
 | **Maksymalna liczba LED** | 85 (konfigurowalna z poziomu UI) |
 
+Liczba diod LED jest ograniczona długością wykorzystanych taśm.
+
 ### Interfejs użytkownika
 Strona WWW została zaprojektowana w sposób minimalistyczny, zapewniając pełną kontrolę nad oświetleniem. Umożliwia ona:
 
@@ -71,12 +68,23 @@ Struktura danych przesyłanych protokołem UDP została zoptymalizowana za pomoc
 
 ### Schemat projektu
 
-![Schemat projektu](schemat.png)
+![Schemat projektu](imgs/schemat.png)
+
+### Obudowa Mastera
+
+Dla modułu Master wydrukowano obudowę z tworzywa sztucznego PLA, korzystając z drukarki Bambu Lab.
+
+<div style="width:200px;">
+
+![Obudowa Mastera](imgs/espCase.jpeg)
+
+</div>
+
 
 ## Instrukcja Uruchomienia (Sterowanie paskami LED z użyciem telefonu)
 
 1.  **Zasilanie:** Podpinamy paski LED do prądu z użyciem wtyczek będących w zestawie.
-2.  **Podłączenie sterownika:** Korzystając z kabla USB podpinamy płytkę do zasilania (port USB / power bank / ładowarka).
+2.  **Podłączenie sterownika:** Korzystając z kabla USB podpinamy płytkę (płytka zamknięta w plastikowej obudowie) do zasilania (port USB / power bank / ładowarka).
 3.  **Połączenie WiFi:** Po podłączeniu łączymy telefon do sieci WiFi generowanej przez płytkę.
     *   Nazwa sieci: `LED_MASTER`
     *   Hasło: `12345678`
@@ -84,7 +92,7 @@ Struktura danych przesyłanych protokołem UDP została zoptymalizowana za pomoc
 
 <div align="center">
 
-![Kod QR umożliwiający połączenie z siecią WiFi](LED_MASTER-qrcode.png)
+![Kod QR umożliwiający połączenie z siecią WiFi](imgs/LED_MASTER-qrcode.png)
 
 </div>
 
@@ -92,7 +100,7 @@ Struktura danych przesyłanych protokołem UDP została zoptymalizowana za pomoc
 
 <div align="center">
 
-![Kod QR z linkiem do strony](qr-led-local.jpg)
+![Kod QR z linkiem do strony](imgs/qr-led-local.jpg)
 
 </div>
 
@@ -103,7 +111,7 @@ Struktura danych przesyłanych protokołem UDP została zoptymalizowana za pomoc
 
 <div align="center">
 
-![Strona do sterowania paskami LED](ledMasterGUI.png)
+![Strona do sterowania paskami LED](imgs/ledMasterGUI.png)
 
 </div>
 
